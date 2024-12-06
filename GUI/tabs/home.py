@@ -58,30 +58,6 @@ print(LEMON_CABLE_APP_LOGO_PATH)
 
 
 
-
-class ScrollableMessageBox(QMessageBox):
-    def __init__(self, title, message, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle(title)
-        self.setIcon(QMessageBox.Information)
-
-        # Create a scrollable area
-        scroll_area = QScrollArea(self)
-        scroll_area.setWidgetResizable(True)
-
-        # Add the message inside a QLabel
-        message_label = QLabel(message)
-        message_label.setWordWrap(True)
-        scroll_area.setWidget(message_label)
-
-        # Add the scroll area to the QMessageBox layout
-        scroll_widget = QWidget(self)
-        scroll_layout = QVBoxLayout(scroll_widget)
-        scroll_layout.addWidget(scroll_area)
-
-        self.layout().addWidget(scroll_widget)
-
-
 # TODO IDK what to call this yet, since the home tab is general, and whatever fuck you
 class FileRenameAndMoveWorker(QThread):
     progress = pyqtSignal(int, int)
@@ -122,7 +98,7 @@ class FileRenameAndMoveWorker(QThread):
                         self.error.emit("Failed to generate unique titles.")
                         return
 
-                    album_name = current_titles[0]
+                    album_name: str = current_titles[0]
                     song_count = 0
                     unique_album_names.add(album_name)
 
@@ -149,7 +125,8 @@ class FileRenameAndMoveWorker(QThread):
                     song_count = song_count + 1
 
                 except Exception as e:
-                    self.error.emit(f"Error processing {filename}: {e}")
+                    print(f"Error processing file: {filename}: {e}")
+                    self.error.emit(f"Error processing file: {filename}: {e}")
                     continue
 
                 # Update progress
@@ -157,6 +134,7 @@ class FileRenameAndMoveWorker(QThread):
 
             self.finished.emit()
         except Exception as e:
+            print(f"Error processing files: {str((e))}")
             self.error.emit(str(e))
 
     def get_album_names_from_albums_folder(self):
@@ -220,12 +198,15 @@ class MusicCleanerWorker(QThread):
                     self.successes += 1
                 except Exception as e:
                     self.errored_files.append(filename)
+                    print(f"Error processing file: {filename}")
                     continue
             if self.errored_files:
+                print(f"Errored processing some file(s) \nErrored Files: {' '.join(self.errored_files)}")
                 self.error.emit(f"Errored processing some file(s) \nErrored Files: {' '.join(self.errored_files)}")
 
             self.finished.emit(self.successes, len(self.errored_files))
         except Exception as e:
+            print(f"Error processing files: {str(e)}")
             self.error.emit(str(e))
 
     def process_file(self, file_path, filename, index, total_files):
@@ -240,6 +221,7 @@ class MusicCleanerWorker(QThread):
             audio, min_silence_len=2000, silence_thresh=-40
         )
         if not nonsilent_ranges:
+            self.progress.emit(total_files, index)
             raise ValueError(f"No nonsilent audio detected in {filename}.")
 
         # Extract the range from the first nonsilent frame to the last nonsilent frame
@@ -274,7 +256,6 @@ class HomeUI(QWidget):
         self.rename_input_dir = None
         self.progress_bar = None
         self.output_dir = None
-        self.rename_input_dir = None
         self.random_name_button = None
         self.random_name_label = None
         self.random_name_section = None
@@ -340,13 +321,12 @@ class HomeUI(QWidget):
         self.layout.addLayout(logo_layout)
 
     def update_random_name_label(self):
-        print("Button clicked yo")
         """Update the label text and apply a new style."""
         self.random_name_label.setText(self.namer.generate_title())
         self.random_name_label.setObjectName('RandomNameLabelWithName')
 
     def build_input_output_trim_sound_dir_section(self):
-        strip_dead_sound_group = QGroupBox("Strip Dead Sound From Files")
+        strip_dead_sound_group = QGroupBox("Trim Silence From Audio Files")
         strip_dead_sound_layout = QVBoxLayout()
 
         input_dir_layout = QHBoxLayout()
@@ -377,7 +357,7 @@ class HomeUI(QWidget):
 
         strip_dead_sound_layout.addLayout(output_dir_layout)
         clean_music_layout = QHBoxLayout()
-        self.clean_music_start_button = QPushButton("Clean Music")
+        self.clean_music_start_button = QPushButton("Trim Silence")
         self.clean_music_start_button.setMinimumWidth(170)
         self.clean_music_start_button.setMaximumWidth(180)
         self.clean_music_start_button.clicked.connect(self.clean_music)
@@ -401,7 +381,7 @@ class HomeUI(QWidget):
         self.layout.addWidget(strip_dead_sound_group)
 
     def build_file_rename_move_section(self):
-        file_rename_move_group = QGroupBox("Rename and Move Files")
+        file_rename_move_group = QGroupBox("Generate Song Names for Albums and Files")
         file_rename_move_layout = QVBoxLayout()
 
         input_dir_layout = QHBoxLayout()
@@ -433,7 +413,7 @@ class HomeUI(QWidget):
         file_rename_move_layout.addLayout(output_dir_layout)
 
         rename_move_layout = QHBoxLayout()
-        self.rename_move_start_button = QPushButton("Rename and Move Files")
+        self.rename_move_start_button = QPushButton("Generate Song Names")
         self.rename_move_start_button.setMinimumWidth(170)
         self.rename_move_start_button.setMaximumWidth(180)
         self.rename_move_start_button.clicked.connect(self.rename_and_move_files)
@@ -448,7 +428,7 @@ class HomeUI(QWidget):
 
         temp_shit = QHBoxLayout()
         checkbox_layout = QHBoxLayout()
-        self.make_multiple_albums_checkbox = QCheckBox("Make Multiple Albums?")
+        self.make_multiple_albums_checkbox = QCheckBox("For All Files In Input Directory?")
         self.make_multiple_albums_checkbox.setChecked(False)  # Unchecked by default
         self.make_multiple_albums_checkbox.stateChanged.connect(self.on_checkbox_state_changed)
         checkbox_layout.addWidget(self.make_multiple_albums_checkbox)
@@ -536,7 +516,6 @@ class HomeUI(QWidget):
         QMessageBox.critical(self, "Error", message)
         self.clean_progress_label.setVisible(False)
 
-
     def create_progress_bar(self):
         """Create and add the progress bar to the layout."""
         self.progress_bar = QProgressBar(self)
@@ -552,18 +531,21 @@ class HomeUI(QWidget):
         if dir_path:
             self.input_dir = dir_path
             self.input_dir_label.setText(f"Input Directory: {dir_path}")
+            print(f"Input Directory: {dir_path}")
 
     def select_input_directory_SHARED(self):
         dir_path = QFileDialog.getExistingDirectory(self, "Select Input Directory")
         if dir_path:
             self.input_dir = dir_path
             self.input_dir_label.setText(f"Input Directory: {dir_path}")
+            print(f"Input Directory: {dir_path}")
 
     def select_output_directory(self):
         dir_path = QFileDialog.getExistingDirectory(self, "Select Output Directory")
         if dir_path:
             self.output_dir = dir_path
             self.output_dir_label.setText(f"Output Directory: {dir_path}")
+            print(f"Input Directory: {dir_path}")
 
     def clean_music(self):
         if not self.input_dir or not self.output_dir:
@@ -586,7 +568,7 @@ class HomeUI(QWidget):
         self.clean_music_worker.start()
 
     def update_progress_bar(self, total_files, file_index):
-        self.progress_bar.setValue((file_index + 1) * 100 // total_files)
+        self.progress_bar.setValue(file_index)
         self.clean_progress_label.setText(f"{file_index} out of {total_files} files")
 
     def on_cleaning_finished(self, success_count, error_count):

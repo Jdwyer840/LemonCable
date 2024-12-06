@@ -40,12 +40,87 @@ class NameGenerator:
     "skeletal", "necrotic", "flaming", "barbaric", "ashen", "vile", "cataclysmic",
     "reaperlike", "razor sharp", "brutal", "howling", "obsidian", "bloodthirsty",
     "darkened", "voidborn", "shattered", "stormridden", "apex", "razorclad"]
+
     nouns = ["Storm", "Heart", "Soul", "Fire", "Dream", "Night", "Shadow",
         "Rebel", "Phoenix", "Chaos", "Flame", "Light", "Rain", "Thunder",
         "Horizon", "Ashes", "Infinity", "Sky", "Wind", "Silence", "Waves",
         "Tide", "Destiny", "Moon", "Raven", "Eclipse", "Chasm", "Edge", "Sawtooth Tiger",
         "Glory", "Fate", "Spirit", "Wilderness", "Forest", "Ember",
-        "Mystery", "Serpent", "Wraith", "Vision", "Beacon", "Canyon",
+        "Mystery", "Serpent", "Wraith","politics", "religion", "deserts", "oceans", "mountains", "forests", "rivers", "countries",
+    "cities", "villages", "towns", "governments", "laws", "justice", "freedom", "equality",
+    "traditions", "culture", "philosophy", "history", "science", "technology", "art",
+    "music", "literature", "education", "knowledge", "truth", "beliefs", "faith",
+    "morality", "ethics", "war", "peace", "conflict", "revolution", "democracy",
+    "dictatorship", "capitalism", "socialism", "communism", "anarchy", "civilization",
+    "empire", "kingdom", "republic", "dynasty", "empire", "pharaoh", "gladiator", "crusade", "chariot", "artifact",
+    "hieroglyph", "archaeology", "renaissance", "dark ages", "siege", "trebuchet",
+    "catapult", "medieval", "vikings", "knights", "plague", "samurai", "coliseum",
+    "tomb", "mummy", "explorer", "conquistador", "inquisition", "revolution",
+    "alchemy", "guild", "crown", "scepter", "papyrus", "scroll", "manuscript",
+    "armory", "battlefield", "fortress", "galleon", "keel", "cannonball",
+    "monarch", "serf", "peasant", "alchemy", "monastery", "cathedral", "oracle",
+    "graveyard", "haunted house", "zombie", "werewolf", "vampire", "slasher",
+    "chainsaw", "demon", "possession", "seance", "witch", "coven", "poltergeist",
+    "phantom", "creepy doll", "crypt", "basement", "attic", "curse", "ritual",
+    "blood moon", "full moon", "fog", "scream", "shadow", "nightmare",
+    "ghost", "specter", "skull", "skeleton", "ritual dagger", "cult", "evil twin",
+    "abandoned asylum", "serial killer", "mask", "shadows", "creepy forest",
+    "grave marker", "pumpkin patch", "witchcraft", "book of spells", "black cat",
+    "tarot cards", "sinister", "omen", "coffin", "hearse", "cemetery",
+    "goober", "dingleberry", "flibbertigibbet", "snickerdoodle", "bamboozle",
+    "lollygag", "hullabaloo", "fiddlesticks", "skedaddle", "shenanigans",
+    "hootenanny", "kerfuffle", "boondoggle", "wackadoodle", "flummox",
+    "thingamajig", "whatchamacallit", "doohickey", "gobbledygook", "hogwash",
+    "nincompoop", "ragamuffin", "bumfuzzle", "cattywampus", "jabberwocky",
+    "snollygoster", "lickspittle", "poppycock", "malarkey", "fopdoodle",
+    "whippersnapper", "klutz", "brouhaha", "guffaw", "hodgepodge",
+    "booger", "turdnugget", "fartknocker", "wigglebottom", "pickleweasel",
+    "crumpet", "sassyfrass", "flapdoodle", "gigglesnort", "zamboni",
+    "toots", "twaddle", "blubberbutt", "sockdologer", "bumbling buffoon",
+    "piddlywink", "mugwump", "snickerdoodle", "beelzebub", "quibbler" "monarchy", "feudalism", "theocracy",
+    "economy", "trade", "industry", "agriculture", "resources", "wealth",
+    "poverty", "hunger", "famine", "health", "medicine", "disease", "epidemic",
+    "pandemic", "climate", "weather", "seasons", "sunlight", "rain", "snow",
+    "wind", "hurricanes", "tornadoes", "earthquakes", "volcanoes", "wildlife",
+    "habitat", "extinction", "evolution", "genes", "biology", "chemistry",
+    "physics", "astronomy", "galaxies", "stars", "planets", "moons", "blackholes",
+    "cosmos", "universe", "space", "time", "gravity", "energy", "matter",
+    "atoms", "particles", "waves", "light", "darkness", "shadows", "dreams",
+    "imagination", "creativity", "invention", "innovation", "exploration",
+    "discovery", "adventure", "journey", "voyage", "expedition", "migration",
+    "settlement", "colonization", "slavery", "liberation", "oppression", "resistance",
+    "justice", "inequality", "discrimination", "rights", "privileges",
+    "obligations", "duties", "relationships", "family", "friendship",
+    "love", "marriage", "divorce", "parenting", "childhood", "adulthood",
+    "aging", "death", "mourning", "grief", "happiness", "sadness", "anger",
+    "fear", "courage", "patience", "compassion", "kindness", "charity",
+    "violence", "crime", "punishment", "rehabilitation", "education", "learning",
+    "wisdom", "ignorance", "knowledge", "mystery", "curiosity", "questions",
+    "answers", "secrets", "lies", "truth", "reality", "fantasy", "fiction",
+    "stories", "narratives", "legends", "myths", "folklore", "rituals",
+    "symbols", "languages", "dialects", "scripts", "writing", "communication",
+    "media", "news", "propaganda", "advertising", "marketing", "consumption",
+    "consumerism", "capital", "labor", "markets", "profits", "losses", "investments",
+    "savings", "loans", "debt", "wealth", "poverty", "hunger", "abundance",
+    "scarcity", "plenty", "surplus", "deficit", "balance", "imbalance",
+    "harmony", "discord", "unity", "division", "integration", "segregation",
+    "fusion", "separation", "connection", "isolation", "community", "society",
+    "individual", "identity", "self", "ego", "consciousness", "awareness",
+    "thoughts", "ideas", "beliefs", "faith", "doubt", "hope", "despair",
+    "optimism", "pessimism", "ambition", "contentment", "freedom", "slavery",
+    "tyranny", "liberty", "justice", "peace", "war", "conflict", "agreement",
+    "treaties", "alliances", "enemies", "friends", "rivals", "competitors",
+    "partners", "collaborators", "teamwork", "cooperation", "leadership",
+    "followership", "hierarchies", "networks", "systems", "organizations",
+    "institutions", "companies", "corporations", "businesses", "entrepreneurs",
+    "workers", "employers", "employees", "managers", "executives", "leaders",
+    "followers", "innovators", "creators", "artists", "scientists", "engineers",
+    "teachers", "students", "learners", "mentors", "guides", "explorers",
+    "adventurers", "pioneers", "trailblazers", "heroes", "villains", "protagonists",
+    "antagonists", "characters", "actors", "roles", "scripts", "dialogues",
+    "monologues", "soliloquies", "performances", "audiences", "spectators",
+    "viewers", "readers", "listeners", "observers", "participants", "players",
+    "competitors", "contestants", "champions", "winners", "losers", "survivors" "Vision", "Beacon", "Canyon",
         "Bliss", "Desire", "Ruin", "Vortex", "Pulse", "Legend", "Vow",
         "Revenge", "Echo", "Trail", "Valley", "Courage", "Crown",
         "Crystal", "Light", "Noodle", "Beefcake", "Dumpster", "Pickle", "Sausage", "Meatball",
@@ -117,7 +192,35 @@ class NameGenerator:
         "Licking", "Scratching", "Squeaking", "Smacking", "Gargling",
         "Pranking", "Pouting", "Flailing", "Scooping", "Slurping",
         "Twerking", "Hiding", "Shaking", "Stumbling", "Coughing",
-        "Yawning", "Poking", "Stinking", "Barking", "Bark", "Drooping",
+        "Yawning", "Poking", "Capture", "Conquer", "Seize", "March", "Beseech", "Revolt", "Dominate", "Raid",
+    "Pillage", "Plunder", "Execute", "Subdue", "Flee", "Pursue", "Negotiate",
+    "Ambush", "Defend", "Unravel", "Reign", "Usurp", "Duel", "Cower", "Proclaim",
+    "Surrender", "Halt", "Emerge", "Erect", "Summon", "Imprison", "Crown",
+    "Fortify", "Embody", "Dismantle", "Falsify", "Worship", "Denounce",
+    "Oust", "Establish", "Reclaim", "Embrace", "Torment", "Shiver", "Weep",
+    "Lament", "Haunt", "Dread", "Terrorize", "Menace", "Devour", "Howl",
+    "Scratch", "Chase", "Snarl", "Whisper", "Crush", "Entice", "Sway",
+    "Conspire", "Hiss", "Eviscerate", "Stalk", "Unleash", "Mutilate",
+    "Pierce", "Swarm", "Twist", "Disguise", "Emerge", "Descend", "Eclipse",
+    "Gleam", "Shatter", "Desecrate", "Entomb", "Poison", "Incite", "Manipulate",
+    "Flinch", "Bicker", "Jape", "Sneer", "Mock", "Guffaw", "Wail", "Sniffle",
+    "Jeer", "Scoff", "Feign", "Plead", "Scheme", "Swagger", "Swindle",
+    "Whimper", "Clamber", "Cringe", "Peep", "Shriek", "Leap", "Wrangle",
+    "Stumble", "Crawl", "Grovel", "Stomp", "Shove", "Tug", "Twirl", "Clutch",
+    "Hurl", "Vault", "Flip", "Grip", "Cling", "Barter", "Beg", "Gnaw",
+    "Chew", "Squeal", "Yelp", "Tinker", "Jostle", "Prod", "Flop", "Waddle",
+    "Trot", "Whack", "Dash", "Pummel", "Flick", "Swat", "Snatch", "Flinch",
+    "Toss", "Bash", "Crash", "Fiddle", "Snore", "Giggle", "Snort", "Chirp",
+    "Burrow", "Thump", "Grunt", "Flail", "Rattle", "Creak", "Clang", "Dodge",
+    "Scurry", "Bolt", "Sprint", "Lurk", "Duck", "Plummet", "Erupt", "Gasp",
+    "Chuckle", "Blurt", "Sputter", "Sigh", "Exhale", "Wince", "Yawn", "Slither",
+    "Stab", "Poke", "Jab", "Whack", "Swipe", "Shred", "Skid", "Scoot", "Paddle",
+    "Slink", "Quiver", "Nuzzle", "Sprawl", "Wrestle", "Quake", "Quaff", "Bumble",
+    "Ramble", "Slouch", "Brood", "Vanish", "Appear", "Soak", "Frolic", "Twiddle",
+    "Hasten", "Waver", "Confront", "Wander", "Expand", "Evoke", "Ignite",
+    "Enrage", "Bewilder", "Conceal", "Transform", "Summon", "Implore", "Vex",
+    "Awaken", "Invoke", "Perish", "Resurrect", "Gnash", "Thrash", "Writhe",
+    "Dismember", "Transcend", "Incinerate", "Engulf", "Obliterate" "Stinking", "Barking", "Bark", "Drooping",
         "Quacking", "Biting", "Scrunching", "Plopping", "Snuggling",
         "Hopping", "Rolling", "Fumbling", "Stretching", "Dancing",
         "Squirming", "Tumbling", "Cough", "Laughs", "Burn", "Rise", "Fall", "Crash", "Break", "Soar", "Fade", "Run",
@@ -329,10 +432,27 @@ class NameGenerator:
 
     def generate_title(self, category: str = "album") -> str:
         # Choose a random generation strategy
-        strategy = random.choice([
+        strategy_pool = [
             "single_noun", "single_verb", "single_adjective", "short_phrase",
-            "adj_noun", "noun_verb", "verb_adj_noun", "random_combo", "double_noun", "short_phrase_and_a_noun", "short_phrase_with_a_noun", "noun_and_noun"
-        ])
+            "adj_noun", "noun_verb", "verb_adj_noun", "random_combo", "double_noun",
+            "short_phrase_and_a_noun", "short_phrase_with_a_noun", "noun_and_noun",
+            "random_combo", "noun_on_a_noun", "like_a_noun", "passing_by_a_noun",
+            "verb_by_a_noun", "in_the_adj_noun", "noun_of_a_noun", "verb_the_noun",
+            "noun_in_the_noun", "the_noun_and_the_noun", "adjective_and_adjective",
+            "verb_a_verb", "random_combo_funny", "the_adj_of_the_noun",
+            "verb_with_a_noun", "adjective_verb_noun", "gerund_and_the_noun",
+            "from_the_adj_noun", "noun_at_a_time", "adj_noun_in_space", "noun_vs_noun", "the_adj_and_the_noun", "gerund_of_a_noun", "dude_where_is_my_noun"
+        ]
+
+        # Add weights for more randomness (some strategies appear more frequently)
+        weighted_strategies = strategy_pool * 2 + ["short_phrase", "random_combo", "adj_noun"] * 3
+
+        # Select one or more strategies for layering
+        primary_strategy = random.choice(weighted_strategies)
+        secondary_strategy = random.choice(strategy_pool)
+
+        # 50% chance to use the secondary strategy for added randomness
+        strategy = random.choice([primary_strategy, secondary_strategy])
 
         # Generate based on the strategy
         if strategy == "single_noun":
@@ -344,13 +464,20 @@ class NameGenerator:
         elif strategy == "short_phrase":
             return random.choice(self.random_short_phrases)
         elif strategy == "short_phrase_and_a_noun":
-            return f"{random.choice(self.random_short_phrases)} and a {random.choice(self.nouns)}"
+            noun = random.choice(self.nouns)
+            article = self.get_article(noun)
+            return f"{random.choice(self.random_short_phrases)} and {article} {noun}"
         elif strategy == "short_phrase_with_a_noun":
-            return f"{random.choice(self.random_short_phrases)} with a {random.choice(self.nouns)}"
+            noun = random.choice(self.nouns)
+            article = self.get_article(noun)
+            return f"{random.choice(self.random_short_phrases)} with {article} {noun}"
         elif strategy == "adj_noun":
             return f"{random.choice(self.adjectives)} {random.choice(self.nouns)}"
         elif strategy == "noun_verb":
             return f"{random.choice(self.nouns)} {random.choice(self.verbs)}"
+        elif strategy == "noun_on_a_noun":
+            noun = random.choice(self.nouns)
+            return f"{random.choice(self.nouns)} on {self.get_article(noun)} {noun}"
         elif strategy == "double_noun":
             return f"{random.choice(self.nouns)} {random.choice(self.nouns)}"
         elif strategy == "noun_and_noun":
@@ -358,12 +485,55 @@ class NameGenerator:
         elif strategy == "verb_adj_noun":
             return f"{random.choice(self.verbs)} {random.choice(self.adjectives)} {random.choice(self.nouns)}"
         elif strategy == "random_combo":
-            # Combine two or three random elements in no particular order
             elements = random.sample(
                 [random.choice(self.adjectives), random.choice(self.nouns), random.choice(self.verbs)],
                 k=random.randint(2, 3)
             )
             return " ".join(elements)
+        elif strategy == "like_a_noun":
+            noun = random.choice(self.nouns)
+            article = self.get_article(noun)
+            return f"Like {article} {noun}"
+        elif strategy == "passing_by_a_noun":
+            noun = random.choice(self.nouns)
+            article = self.get_article(noun)
+            return f"Passing by {article} {noun}"
+        elif strategy == "dude_where_is_my_noun":
+            noun: str = random.choice(self.nouns)
+            return f"Where {'are' if noun.endswith('s') else 'is'} my {noun}"
+        elif strategy == "gerund_of_a_noun":
+            noun = random.choice(self.nouns)
+            verb = random.choice(self.verbs)
+            return f"{verb} of {self.get_article(noun)} {noun}"
+        elif strategy == "the_adj_and_the_noun":
+            adj = random.choice(self.adjectives)
+            noun = random.choice(self.nouns)
+            return f"The {adj} and the {noun}"
+        elif strategy == "noun_vs_noun":
+            return f"{random.choice(self.nouns)} vs {random.choice(self.nouns)}"
+        elif strategy == "adj_noun_in_space":
+            return f"{random.choice(self.adjectives)} {random.choice(self.nouns)} in Space"
+        elif strategy == "verb_by_a_noun":
+            noun = random.choice(self.nouns)
+            article = self.get_article(noun)
+            verb = random.choice(self.verbs)
+            return f"{verb.capitalize()} by {article} {noun}"
+        elif strategy == "in_the_adj_noun":
+            adj = random.choice(self.adjectives)
+            noun = random.choice(self.nouns)
+            return f"In the {adj} {noun}"
 
         # Fallback: Random short phrase
         return random.choice(self.random_short_phrases)
+
+    def get_article(self, word):
+        """Determine whether to use 'a' or 'an' based on the word."""
+        vowels = "aeiou"
+        return "an" if word[0].lower() in vowels else "a"
+
+    def pluralize_if_needed(self, word):
+        """Return a pluralized form if the word is a plural noun."""
+        if word.endswith("s"):
+            return word
+        # Pluralization logic (basic heuristic)
+        return f"{word}s" if not word.endswith("y") else f"{word[:-1]}ies"

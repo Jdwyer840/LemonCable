@@ -49,13 +49,11 @@ QMessageBox {
     background-color: #1E1E1E;
     color: #FFFFFF;
     border: none;
-        overflow-y: scroll;
 
 }
 
 QMessageBox QLabel {
     color: #FFFFFF;  /* Ensure labels have the desired text color */
-        overflow-y: scroll;
 
 }
 
@@ -190,7 +188,7 @@ QSpinBox::up-arrow, QSpinBox::down-arrow {
     font-weight: bold;
     font-size: 14px;
     background-color: #1E88E5;
-    max-height: 20px;
+    max-height: 50px;
 }
 
 #AlbumSettingsLabel {
