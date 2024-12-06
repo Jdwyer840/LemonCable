@@ -1,0 +1,138 @@
+
+QWidget {
+    background-color: rgba(56, 50, 64, 255);
+    color: #FFFFFF;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+QLabel {
+    color: #BBBBBB;
+    font-size: 16px;
+}
+
+QPushButton {
+    background-color: #1E88E5;
+    color: #FFFFFF;
+    border: 2px solid #1E88E5;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+QPushButton:hover {
+    background-color: #1565C0;
+    border: 2px solid #1565C0;
+}
+
+QPushButton:pressed {
+    background-color: #0D47A1;
+    border: 2px solid #0D47A1;
+}
+
+QFileDialog QPushButton {
+    background-color: #1E88E5;
+    border: none;
+    border-radius: 8px;
+    color: white;
+}
+
+QLineEdit, QComboBox {
+    background-color: #1E1E1E;
+    color: #FFFFFF;
+    border: 1px solid #444444;
+    border-radius: 5px;
+    padding: 4px;
+}
+
+QMessageBox {
+    background-color: #1E1E1E;
+    color: #FFFFFF;
+}
+
+RandomNameLabelEmpty {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #383240;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+RandomNameLabelWithName {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #383240;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+QTabWidget {
+    background-color: rgba(56, 50, 64, 255);
+    border: 1px solid #444444;
+    font-size: 14px;
+}
+
+QTabWidget::pane {
+    border: 1px solid #444444;
+    background-color: #383240;
+    border-radius: 8px;
+}
+
+/* Tab Bar Styling */
+QTabBar {
+    background-color: #383240;
+    font-size: 14px;
+    font-weight: bold;
+    color: #FFFFFF;
+}
+
+QTabBar::tab {
+    background-color: #1E88E5;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    margin: 4px;
+}
+
+QTabBar::tab:hover {
+    background-color: #1565C0;
+}
+
+QTabBar::tab:selected {
+    background-color: #0D47A1;
+    font-weight: bold;
+    color: white;
+}
+
+RandomNameButton {
+    background-color: #1E88E5;
+    color: white;
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+QProgressBar {
+    background-color: #383240; /* Background matches other elements */
+    border: 2px solid #444444; /* Consistent border */
+    border-radius: 8px;
+    color: #FFFFFF; /* Text color for percentage display */
+    font-size: 14px; /* Font size */
+    text-align: center; /* Center the text inside the bar */
+}
+
+QProgressBar::chunk {
+    background-color: #1E88E5; /* Primary progress color */
+    border-radius: 8px; /* Match outer radius */
+}
+
+QCheckBox {
+        font-size: 14px;
+        color: blue;
+    }
+    QCheckBox::indicator {
+        width: 20px;
+        height: 20px;
+    }
