@@ -331,7 +331,7 @@ class NameGenerator:
         # Choose a random generation strategy
         strategy = random.choice([
             "single_noun", "single_verb", "single_adjective", "short_phrase",
-            "adj_noun", "noun_verb", "verb_adj_noun", "random_combo", "double_noun", "short_phrase_and_a_noun"
+            "adj_noun", "noun_verb", "verb_adj_noun", "random_combo", "double_noun", "short_phrase_and_a_noun", "short_phrase_with_a_noun", "noun_and_noun"
         ])
 
         # Generate based on the strategy
@@ -344,13 +344,17 @@ class NameGenerator:
         elif strategy == "short_phrase":
             return random.choice(self.random_short_phrases)
         elif strategy == "short_phrase_and_a_noun":
-            return f"{random.choice(self.random_short_phrases)} and A {random.choice(self.nouns)}"
+            return f"{random.choice(self.random_short_phrases)} and a {random.choice(self.nouns)}"
+        elif strategy == "short_phrase_with_a_noun":
+            return f"{random.choice(self.random_short_phrases)} with a {random.choice(self.nouns)}"
         elif strategy == "adj_noun":
             return f"{random.choice(self.adjectives)} {random.choice(self.nouns)}"
         elif strategy == "noun_verb":
             return f"{random.choice(self.nouns)} {random.choice(self.verbs)}"
         elif strategy == "double_noun":
             return f"{random.choice(self.nouns)} {random.choice(self.nouns)}"
+        elif strategy == "noun_and_noun":
+            return f"{random.choice(self.nouns)} and {random.choice(self.nouns)}"
         elif strategy == "verb_adj_noun":
             return f"{random.choice(self.verbs)} {random.choice(self.adjectives)} {random.choice(self.nouns)}"
         elif strategy == "random_combo":

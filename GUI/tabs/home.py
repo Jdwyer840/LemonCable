@@ -58,9 +58,33 @@ print(LEMON_CABLE_APP_LOGO_PATH)
 
 
 
+
+class ScrollableMessageBox(QMessageBox):
+    def __init__(self, title, message, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.setIcon(QMessageBox.Information)
+
+        # Create a scrollable area
+        scroll_area = QScrollArea(self)
+        scroll_area.setWidgetResizable(True)
+
+        # Add the message inside a QLabel
+        message_label = QLabel(message)
+        message_label.setWordWrap(True)
+        scroll_area.setWidget(message_label)
+
+        # Add the scroll area to the QMessageBox layout
+        scroll_widget = QWidget(self)
+        scroll_layout = QVBoxLayout(scroll_widget)
+        scroll_layout.addWidget(scroll_area)
+
+        self.layout().addWidget(scroll_widget)
+
+
 # TODO IDK what to call this yet, since the home tab is general, and whatever fuck you
 class FileRenameAndMoveWorker(QThread):
-    progress = pyqtSignal(int)
+    progress = pyqtSignal(int, int)
     finished = pyqtSignal()
     error = pyqtSignal(str)
 
@@ -129,7 +153,7 @@ class FileRenameAndMoveWorker(QThread):
                     continue
 
                 # Update progress
-                self.progress.emit(index + 1)
+                self.progress.emit(index + 1, total_files)
 
             self.finished.emit()
         except Exception as e:
@@ -157,8 +181,8 @@ class FileRenameAndMoveWorker(QThread):
 
 # TODO make this a standard class so we dont rewrite for the same shit
 class MusicCleanerWorker(QThread):
-    progress = pyqtSignal(int)
-    finished = pyqtSignal()
+    progress = pyqtSignal(int, int)
+    finished = pyqtSignal(int, int)
     error = pyqtSignal(str)
 
     def __init__(self, input_dir, output_dir, supported_extensions):
@@ -166,9 +190,15 @@ class MusicCleanerWorker(QThread):
         self.input_dir = input_dir
         self.output_dir = output_dir
         self.supported_extensions = supported_extensions
+        self.errored_files = []
+        self.successes = 0
 
     def run(self):
         try:
+            if not os.path.isdir(self.input_dir):
+                self.error.emit("Input directory does not exist.")
+                return
+
             files = [
                 f for f in os.listdir(self.input_dir)
                 if os.path.isfile(os.path.join(self.input_dir, f))
@@ -179,38 +209,52 @@ class MusicCleanerWorker(QThread):
                 return
 
             for index, filename in enumerate(files):
-                file_path = os.path.normpath(os.path.join(self.input_dir, filename))
-                if not os.path.isfile(file_path):
-                    continue
-
+                file_path = os.path.join(self.input_dir, filename)
                 _, ext = os.path.splitext(filename)
+
                 if ext.lower() not in self.supported_extensions:
                     continue
 
                 try:
-                    audio = AudioSegment.from_file(file_path, format=ext.lstrip('.'))
-                    nonsilent_ranges = detect_nonsilent(audio, min_silence_len=2000, silence_thresh=-40)
-
-                    # Combine nonsilent parts
-                    trimmed_audio = AudioSegment.empty()
-                    for start, end in nonsilent_ranges:
-                        trimmed_audio += audio[start:end]
-
-                    # Save to output directory with modified filename
-                    original_name, ext = os.path.splitext(filename)
-                    new_name = f"{original_name}_processed_{index}{ext}"
-                    output_path = os.path.join(self.output_dir, new_name)
-                    trimmed_audio.export(output_path, format=ext.lstrip('.'))
+                    self.process_file(file_path, filename, index, total_files)
+                    self.successes += 1
                 except Exception as e:
-                    self.error.emit(f"Error processing {filename}: {e}")
+                    self.errored_files.append(filename)
                     continue
+            if self.errored_files:
+                self.error.emit(f"Errored processing some file(s) \nErrored Files: {' '.join(self.errored_files)}")
 
-                # Update progress
-                self.progress.emit(index + 1)
-
-            self.finished.emit()
+            self.finished.emit(self.successes, len(self.errored_files))
         except Exception as e:
             self.error.emit(str(e))
+
+    def process_file(self, file_path, filename, index, total_files):
+        """Trim silence from the beginning and end of the audio file."""
+        _, ext = os.path.splitext(filename)
+
+        # Load the audio file
+        audio = AudioSegment.from_file(file_path, format=ext.lstrip('.'))
+
+        # Detect nonsilent parts
+        nonsilent_ranges = detect_nonsilent(
+            audio, min_silence_len=2000, silence_thresh=-40
+        )
+        if not nonsilent_ranges:
+            raise ValueError(f"No nonsilent audio detected in {filename}.")
+
+        # Extract the range from the first nonsilent frame to the last nonsilent frame
+        start, end = nonsilent_ranges[0][0], nonsilent_ranges[-1][1]
+        trimmed_audio = audio[start:end]
+
+        # Save to the output directory
+        output_path = os.path.join(
+            self.output_dir, f"{os.path.splitext(filename)[0]}_trimmed{ext}"
+        )
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        trimmed_audio.export(output_path, format=ext.lstrip('.'))
+
+        # Update progress
+        self.progress.emit(total_files, index)
 
 
 
@@ -338,7 +382,14 @@ class HomeUI(QWidget):
         self.clean_music_start_button.setMaximumWidth(180)
         self.clean_music_start_button.clicked.connect(self.clean_music)
         clean_music_layout.addWidget(self.clean_music_start_button)
+
+        self.clean_progress_label = QLabel("Waiting to process files...")
+        self.clean_progress_label.setVisible(False)  # Initially hidden
+        self.clean_progress_label.setWordWrap(True)
+
+        clean_music_layout.addWidget(self.clean_progress_label)
         clean_music_layout.setAlignment(Qt.AlignCenter)
+
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setMinimum(0)
         self.progress_bar.setValue(0)
@@ -387,6 +438,13 @@ class HomeUI(QWidget):
         self.rename_move_start_button.setMaximumWidth(180)
         self.rename_move_start_button.clicked.connect(self.rename_and_move_files)
         rename_move_layout.addWidget(self.rename_move_start_button)
+
+        self.rename_progress_label = QLabel("Waiting to process files...")
+        self.rename_progress_label.setVisible(False)  # Initially hidden
+        self.rename_progress_label.setWordWrap(True)
+
+        rename_move_layout.addWidget(self.rename_progress_label)
+
 
         temp_shit = QHBoxLayout()
         checkbox_layout = QHBoxLayout()
@@ -448,15 +506,36 @@ class HomeUI(QWidget):
             QMessageBox.warning(self, "Missing Directories", "Please select both input and output directories.")
             return
 
-        self.album_music_name_worker = FileRenameAndMoveWorker(self.rename_input_dir, self.rename_output_dir, ['.mp3', '.wav'], self.namer, is_multiple_albums=self.make_multiple_albums_checkbox.isChecked(), amount_per_album=self.songs_per_album_count_input.value())
+        self.album_music_name_worker = FileRenameAndMoveWorker(self.rename_input_dir, self.rename_output_dir, ['.mp3', '.wav', '.ogg'], self.namer, is_multiple_albums=self.make_multiple_albums_checkbox.isChecked(), amount_per_album=self.songs_per_album_count_input.value())
         self.album_music_name_worker.progress.connect(self.update_rename_progress)
         self.album_music_name_worker.finished.connect(self.on_rename_move_finished)
         self.album_music_name_worker.error.connect(self.show_error)
         self.rename_progress_bar.setMaximum(len(os.listdir(self.rename_input_dir)))
         self.rename_progress_bar.setValue(0)
         self.rename_progress_bar.setVisible(True)
+        self.rename_progress_label.setVisible(True)
 
         self.album_music_name_worker.start()
+
+    def update_rename_progress(self, file_index, total_files):
+        """Update progress bar."""
+        self.rename_progress_label.setText(f"{file_index} out of {total_files} files")
+        self.rename_progress_bar.setValue(file_index)
+
+    def on_rename_move_finished(self):
+        """Handle successful file processing."""
+        self.rename_progress_bar.setVisible(False)
+        self.rename_progress_label.setText('Waiting...')
+        self.rename_progress_label.setVisible(False)
+
+        QMessageBox.information(self, "Success", "Files renamed and moved successfully!")
+
+    def show_error(self, message):
+        """Handle errors during file processing."""
+        self.clean_progress_label.setText(f"Processing Status: Error - {message}")
+        QMessageBox.critical(self, "Error", message)
+        self.clean_progress_label.setVisible(False)
+
 
     def create_progress_bar(self):
         """Create and add the progress bar to the layout."""
@@ -501,29 +580,24 @@ class HomeUI(QWidget):
         self.progress_bar.setMaximum(len(os.listdir(self.input_dir)))
         self.progress_bar.setValue(0)
         self.progress_bar.setVisible(True)
+        self.clean_progress_label.setVisible(True)
 
         # Start the worker thread
         self.clean_music_worker.start()
 
-    def update_progress_bar(self, value):
-        self.progress_bar.setValue(value)
+    def update_progress_bar(self, total_files, file_index):
+        self.progress_bar.setValue((file_index + 1) * 100 // total_files)
+        self.clean_progress_label.setText(f"{file_index} out of {total_files} files")
 
-    def on_cleaning_finished(self):
+    def on_cleaning_finished(self, success_count, error_count):
         self.progress_bar.setVisible(False)
-        QMessageBox.information(self, "Success", "Music files processed successfully!")
+        self.rename_progress_label.setText("Completed!")
+        self.clean_progress_label.setVisible(False)
+        QMessageBox.information(self, "Success", f"Music files processed successfully! \nSuccessful Files: {success_count}\nErrors: {error_count}")
 
     def on_cleaning_error(self, message):
         QMessageBox.warning(self, "Error", message)
+        self.clean_progress_label.setText(f"Processing Status: Error - {message}")
+        self.clean_progress_label.setVisible(False)
 
-    def update_rename_progress(self, value):
-        """Update progress bar."""
-        self.rename_progress_bar.setValue(value)
 
-    def on_rename_move_finished(self):
-        """Handle successful file processing."""
-        self.rename_progress_bar.setVisible(False)
-        QMessageBox.information(self, "Success", "Files renamed and moved successfully!")
-
-    def show_error(self, message):
-        """Handle errors during file processing."""
-        QMessageBox.critical(self, "Error", message)
