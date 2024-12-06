@@ -2,10 +2,11 @@ import os
 import shutil
 import subprocess
 import sys
+from typing import Optional
 
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QMessageBox, QFileDialog, QProgressBar, QGroupBox
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QMessageBox, QFileDialog, QProgressBar, QGroupBox, QCheckBox, QSpinBox
 
 from controllers.name_generator import NameGenerator
 
@@ -54,31 +55,7 @@ print(resource_path('resources/ffmpeg/ffmpeg.exe'))
 
 print('LEMON_CABLE_APP_LOGO_PATH')
 print(LEMON_CABLE_APP_LOGO_PATH)
-# ffmpeg_path = os.path.join(sys.prefix, "Scripts", "ffmpeg.exe")
-# AudioSegment.converter = ffmpeg_path
 
-
-# def get_ffmpeg_path():
-#     """Resolve the path to ffmpeg.exe for both development and packaged modes."""
-#     if getattr(sys, "frozen", False):  # Packaged mode
-#         base_path = sys._MEIPASS       # PyInstaller's temporary folder
-#     else:
-#         base_path = os.path.dirname(__file__)  # Development mode
-#
-#     return os.path.join(base_path, "resources", "ffmpeg", "ffmpeg.exe")
-#
-# def get_ffprobe_path():
-#     """Resolve the path to ffprobe.exe for both development and packaged modes."""
-#     if getattr(sys, "frozen", False):  # Packaged mode
-#         base_path = sys._MEIPASS
-#     else:
-#         base_path = os.path.dirname(__file__)
-#
-#     return os.path.join(base_path, "resources", "ffmpeg", "ffprobe.exe")
-#
-# # Set the FFmpeg paths for pydub
-# AudioSegment.converter = get_ffmpeg_path()
-# AudioSegment.ffprobe = get_ffprobe_path()
 
 
 # TODO IDK what to call this yet, since the home tab is general, and whatever fuck you
@@ -87,26 +64,19 @@ class FileRenameAndMoveWorker(QThread):
     finished = pyqtSignal()
     error = pyqtSignal(str)
 
-    def __init__(self, input_dir, output_dir, supported_extensions, title_generator):
+    def __init__(self, input_dir, output_dir, supported_extensions, title_generator, is_multiple_albums, amount_per_album=30):
         super().__init__()
         self.input_dir = input_dir
         self.output_dir = output_dir
         self.supported_extensions = supported_extensions
         self.title_generator = title_generator  # Pass the title generator instance
+        self.is_multiple_albums = is_multiple_albums
+        self.amount_per_album = amount_per_album
 
     def run(self):
         try:
             # Generate unique titles
-            unique_titles = list(self.title_generator.generate_unique_set_of_titles())
-            if not unique_titles:
-                self.error.emit("Failed to generate unique titles.")
-                return
-
-            # Create the new folder in the output directory
-            folder_name = unique_titles[0]  # First title becomes the folder name
-            folder_path = os.path.join(self.output_dir, folder_name)
-            os.makedirs(folder_path, exist_ok=True)
-
+            # TODO add database integration here to keep track of album titles
             # Get all files in the input directory
             files = [
                 f for f in os.listdir(self.input_dir)
@@ -116,8 +86,25 @@ class FileRenameAndMoveWorker(QThread):
             if total_files == 0:
                 self.error.emit("No files found in the input directory.")
                 return
-
+            unique_album_names = self.get_album_names_from_albums_folder()
+            current_titles = None
+            album_name = 'album_name'
+            song_count = 0
+            album_folder_path = ''
             for index, filename in enumerate(files):
+                if (not current_titles or len(current_titles) == 0) or song_count == self.amount_per_album:
+                    current_titles = list(self.title_generator.generate_unique_set_of_titles(used_titles=unique_album_names))
+                    if not current_titles:
+                        self.error.emit("Failed to generate unique titles.")
+                        return
+
+                    album_name = current_titles[0]
+                    song_count = 0
+                    unique_album_names.add(album_name)
+
+                    album_folder_path = os.path.join(self.output_dir, album_name)
+                    os.makedirs(album_folder_path, exist_ok=True)
+
                 file_path = os.path.normpath(os.path.normpath(os.path.join(self.input_dir, filename)))
                 if not os.path.isfile(file_path):
                     continue
@@ -130,11 +117,12 @@ class FileRenameAndMoveWorker(QThread):
                     # Generate a new name from the remaining unique titles
                     # if not unique_titles:
                     #     unique_titles = list(self.title_generator.generate_unique_set_of_titles())
-                    new_name = f"{unique_titles.pop(0)}{ext}"
+                    new_name = f"{current_titles.pop(0)}{ext}"
 
                     # Copy the file to the new folder with the new name
-                    new_path = os.path.join(folder_path, new_name)
+                    new_path = os.path.join(album_folder_path, new_name)
                     shutil.copy(file_path, new_path)
+                    song_count = song_count + 1
 
                 except Exception as e:
                     self.error.emit(f"Error processing {filename}: {e}")
@@ -146,6 +134,25 @@ class FileRenameAndMoveWorker(QThread):
             self.finished.emit()
         except Exception as e:
             self.error.emit(str(e))
+
+    def get_album_names_from_albums_folder(self):
+        # Output is where the albums go which are folders
+        folder_names = set()
+        try:
+            if not os.path.exists(self.output_dir):
+                print("Output directory does not exist.")
+                return folder_names
+
+            # Iterate through the directory
+            for item in os.listdir(self.output_dir):
+                item_path = os.path.join(self.output_dir, item)
+                if os.path.isdir(item_path):  # Check if it's a folder
+                    folder_names.add(item)
+
+        except Exception as e:
+            print(f"Error while reading directory: {e}")
+
+        return folder_names
 
 
 # TODO make this a standard class so we dont rewrite for the same shit
@@ -214,6 +221,10 @@ class HomeUI(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.songs_per_album_count_input = None
+        self.album_music_name_worker = None
+        self.songs_per_album_label = None
+        self.make_multiple_albums_checkbox: Optional[QCheckBox] = None
         self.input_dir = None
         self.rename_output_dir = None
         self.rename_input_dir = None
@@ -293,7 +304,6 @@ class HomeUI(QWidget):
     def build_input_output_trim_sound_dir_section(self):
         strip_dead_sound_group = QGroupBox("Strip Dead Sound From Files")
         strip_dead_sound_layout = QVBoxLayout()
-
 
         input_dir_layout = QHBoxLayout()
         self.input_dir_label = QLabel("Input Directory: Not Selected")
@@ -377,8 +387,32 @@ class HomeUI(QWidget):
         self.rename_move_start_button.setMaximumWidth(180)
         self.rename_move_start_button.clicked.connect(self.rename_and_move_files)
         rename_move_layout.addWidget(self.rename_move_start_button)
-        rename_move_layout.setAlignment(Qt.AlignCenter)
 
+        temp_shit = QHBoxLayout()
+        checkbox_layout = QHBoxLayout()
+        self.make_multiple_albums_checkbox = QCheckBox("Make Multiple Albums?")
+        self.make_multiple_albums_checkbox.setChecked(False)  # Unchecked by default
+        self.make_multiple_albums_checkbox.stateChanged.connect(self.on_checkbox_state_changed)
+        checkbox_layout.addWidget(self.make_multiple_albums_checkbox)
+        temp_shit.addLayout(checkbox_layout)
+        temp_shit.setAlignment(Qt.AlignCenter)
+
+        spinbox_layout = QHBoxLayout()  # To position the label and spinbox horizontally
+        self.songs_per_album_label = QLabel("Number of Songs Per Album:")
+        self.songs_per_album_label.setObjectName('AlbumSettingsLabel')
+        self.songs_per_album_count_input = QSpinBox()
+        self.songs_per_album_count_input.setMinimum(1)  # Minimum value
+        self.songs_per_album_count_input.setMaximum(1000)  # Maximum value
+        self.songs_per_album_count_input.setValue(30)  # Default value
+
+        spinbox_layout.addWidget(self.songs_per_album_label)
+        spinbox_layout.addWidget(self.songs_per_album_count_input)
+        temp_shit.addLayout(spinbox_layout)
+        temp_shit.setObjectName('AlbumSettingsDiv')
+
+        file_rename_move_layout.addLayout(temp_shit)
+        # file_rename_move_layout.addLayout(checkbox_layout)
+        # file_rename_move_layout.addLayout(spinbox_layout)
         self.rename_progress_bar = QProgressBar(self)
         self.rename_progress_bar.setMinimum(0)
         self.rename_progress_bar.setValue(0)
@@ -389,6 +423,12 @@ class HomeUI(QWidget):
 
         file_rename_move_group.setLayout(file_rename_move_layout)
         self.layout.addWidget(file_rename_move_group)
+
+    def on_checkbox_state_changed(self, state):
+        if state == Qt.Checked:
+            print("Checkbox is checked!")
+        elif state == Qt.Unchecked:
+            print("Checkbox is unchecked!")
 
     def select_rename_input_directory(self):
         # TODO reuse functions and pass in the details
@@ -408,15 +448,15 @@ class HomeUI(QWidget):
             QMessageBox.warning(self, "Missing Directories", "Please select both input and output directories.")
             return
 
-        worker = FileRenameAndMoveWorker(self.rename_input_dir, self.rename_output_dir, ['.mp3', '.wav'], self.namer)
-        worker.progress.connect(self.update_rename_progress)
-        worker.finished.connect(self.on_rename_move_finished)
-        worker.error.connect(self.show_error)
+        self.album_music_name_worker = FileRenameAndMoveWorker(self.rename_input_dir, self.rename_output_dir, ['.mp3', '.wav'], self.namer, is_multiple_albums=self.make_multiple_albums_checkbox.isChecked(), amount_per_album=self.songs_per_album_count_input.value())
+        self.album_music_name_worker.progress.connect(self.update_rename_progress)
+        self.album_music_name_worker.finished.connect(self.on_rename_move_finished)
+        self.album_music_name_worker.error.connect(self.show_error)
         self.rename_progress_bar.setMaximum(len(os.listdir(self.rename_input_dir)))
         self.rename_progress_bar.setValue(0)
         self.rename_progress_bar.setVisible(True)
 
-        worker.start()
+        self.album_music_name_worker.start()
 
     def create_progress_bar(self):
         """Create and add the progress bar to the layout."""
@@ -452,10 +492,10 @@ class HomeUI(QWidget):
             return
 
         # Initialize the worker thread
-        self.worker = MusicCleanerWorker(self.input_dir, self.output_dir, self.SUPPORTED_EXTENSIONS)
-        self.worker.progress.connect(self.update_progress_bar)
-        self.worker.finished.connect(self.on_cleaning_finished)
-        self.worker.error.connect(self.on_cleaning_error)
+        self.clean_music_worker = MusicCleanerWorker(self.input_dir, self.output_dir, self.SUPPORTED_EXTENSIONS)
+        self.clean_music_worker.progress.connect(self.update_progress_bar)
+        self.clean_music_worker.finished.connect(self.on_cleaning_finished)
+        self.clean_music_worker.error.connect(self.on_cleaning_error)
 
         # Prepare the progress bar
         self.progress_bar.setMaximum(len(os.listdir(self.input_dir)))
@@ -463,7 +503,7 @@ class HomeUI(QWidget):
         self.progress_bar.setVisible(True)
 
         # Start the worker thread
-        self.worker.start()
+        self.clean_music_worker.start()
 
     def update_progress_bar(self, value):
         self.progress_bar.setValue(value)
