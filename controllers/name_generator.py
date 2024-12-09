@@ -456,75 +456,89 @@ class NameGenerator:
 
         # Generate based on the strategy
         if strategy == "single_noun":
-            return random.choice(self.nouns)
+            return random.choice(self.nouns).title()
         elif strategy == "single_verb":
-            return random.choice(self.verbs)
+            return random.choice(self.verbs).title()
         elif strategy == "single_adjective":
-            return random.choice(self.adjectives)
+            return random.choice(self.adjectives).title()
         elif strategy == "short_phrase":
-            return random.choice(self.random_short_phrases)
+            return random.choice(self.random_short_phrases).title()
         elif strategy == "short_phrase_and_a_noun":
             noun = random.choice(self.nouns)
-            article = self.get_article(noun)
-            return f"{random.choice(self.random_short_phrases)} and {article} {noun}"
+            return f"{random.choice(self.random_short_phrases)} and the {noun}".title()
         elif strategy == "short_phrase_with_a_noun":
             noun = random.choice(self.nouns)
-            article = self.get_article(noun)
-            return f"{random.choice(self.random_short_phrases)} with {article} {noun}"
+            article = self.get_is_article_needed(noun)
+            ending = f"{article} {noun}" if article else noun
+            return f"{random.choice(self.random_short_phrases)} with {ending}".title()
         elif strategy == "adj_noun":
-            return f"{random.choice(self.adjectives)} {random.choice(self.nouns)}"
+            return f"{random.choice(self.adjectives)} {random.choice(self.nouns)}".title()
         elif strategy == "noun_verb":
-            return f"{random.choice(self.nouns)} {random.choice(self.verbs)}"
+            return f"{random.choice(self.nouns)} {random.choice(self.verbs)}".title()
         elif strategy == "noun_on_a_noun":
             noun = random.choice(self.nouns)
-            return f"{random.choice(self.nouns)} on {self.get_article(noun)} {noun}"
+            article = self.get_is_article_needed(noun)
+            ending = f"{article} {noun}" if article else noun
+            return f"{random.choice(self.nouns)} on {ending}".title()
         elif strategy == "double_noun":
-            return f"{random.choice(self.nouns)} {random.choice(self.nouns)}"
+            return f"{random.choice(self.nouns)} {random.choice(self.nouns)}".title()
         elif strategy == "noun_and_noun":
-            return f"{random.choice(self.nouns)} and {random.choice(self.nouns)}"
+            return f"{random.choice(self.nouns)} and {random.choice(self.nouns)}".title()
         elif strategy == "verb_adj_noun":
-            return f"{random.choice(self.verbs)} {random.choice(self.adjectives)} {random.choice(self.nouns)}"
+            return f"{random.choice(self.verbs)} {random.choice(self.adjectives)} {random.choice(self.nouns)}".title()
         elif strategy == "random_combo":
             elements = random.sample(
-                [random.choice(self.adjectives), random.choice(self.nouns), random.choice(self.verbs)],
+                [random.choice(self.adjectives).title(), random.choice(self.nouns).title(), random.choice(self.verbs).title()],
                 k=random.randint(2, 3)
             )
             return " ".join(elements)
         elif strategy == "like_a_noun":
             noun = random.choice(self.nouns)
-            article = self.get_article(noun)
-            return f"Like {article} {noun}"
+            article = self.get_is_article_needed(noun)
+            ending = f"{article} {noun}" if article else noun
+            return f"Like {ending}".title()
         elif strategy == "passing_by_a_noun":
             noun = random.choice(self.nouns)
-            article = self.get_article(noun)
-            return f"Passing by {article} {noun}"
+            article = self.get_is_article_needed(noun)
+            ending = f"{article} {noun}" if article else noun
+            return f"Passing by {ending}".title()
         elif strategy == "dude_where_is_my_noun":
             noun: str = random.choice(self.nouns)
-            return f"Where {'are' if noun.endswith('s') else 'is'} my {noun}"
+            return f"Where {'are' if noun.endswith('s') else 'is'} my {noun}".title()
         elif strategy == "gerund_of_a_noun":
             noun = random.choice(self.nouns)
             verb = random.choice(self.verbs)
-            return f"{verb} of {self.get_article(noun)} {noun}"
+            return f"{verb} of {self.get_article(noun)} {noun}".title()
         elif strategy == "the_adj_and_the_noun":
             adj = random.choice(self.adjectives)
             noun = random.choice(self.nouns)
-            return f"The {adj} and the {noun}"
+            return f"The {adj} and the {noun}".title()
         elif strategy == "noun_vs_noun":
-            return f"{random.choice(self.nouns)} vs {random.choice(self.nouns)}"
+            return f"{random.choice(self.nouns)} vs {random.choice(self.nouns)}".title()
         elif strategy == "adj_noun_in_space":
-            return f"{random.choice(self.adjectives)} {random.choice(self.nouns)} in Space"
+            return f"{random.choice(self.adjectives)} {random.choice(self.nouns)} in Space".title()
         elif strategy == "verb_by_a_noun":
             noun = random.choice(self.nouns)
             article = self.get_article(noun)
             verb = random.choice(self.verbs)
-            return f"{verb.capitalize()} by {article} {noun}"
+            return f"{verb.capitalize()} by {article} {noun}".title()
         elif strategy == "in_the_adj_noun":
             adj = random.choice(self.adjectives)
             noun = random.choice(self.nouns)
-            return f"In the {adj} {noun}"
+            return f"In the {adj} {noun}".title()
 
         # Fallback: Random short phrase
-        return random.choice(self.random_short_phrases)
+        return random.choice(self.random_short_phrases).title()
+
+    def get_is_article_needed(self, word: str):
+        words = word.split(" ")
+        try:
+            last_word = words[-1]
+            return "" if last_word.lower().endswith("s") else self.get_article(words[0])
+        except Exception as e:
+            print(f"Error generating random name: {str(e)}")
+            return "Brick Wall"
+
 
     def get_article(self, word):
         """Determine whether to use 'a' or 'an' based on the word."""

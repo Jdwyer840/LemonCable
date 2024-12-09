@@ -22,11 +22,6 @@ FROM_TEXT_STEP_MAP = {
 }
 
 
-# class StepAction:
-#
-#     def __init__(self):
-
-
 class FormHelpers(Enum):
     GO_TO = 'Go To'
     CLICK = 'Click'

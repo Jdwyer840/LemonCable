@@ -53,7 +53,8 @@ class WebDriverController:
     def add_task(self, task: Dict[str, Any], priority: int = 1):
         """Add a task to the task queue."""
         print('YOOOOOOOOO  add_task')
-        self.task_queue.put(priority, task)  # No need to await
+        task_tuple = (priority, task)
+        self.task_queue.put(task_tuple)  # No need to await
 
     def _process_tasks(self):
         """Process tasks from the queue."""
