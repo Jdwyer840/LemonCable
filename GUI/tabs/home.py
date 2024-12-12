@@ -210,7 +210,6 @@ class MusicCleanerWorker(QThread):
             self.error.emit(str(e))
 
     def process_file(self, file_path, filename, index, total_files):
-        """Trim silence from the beginning and end of the audio file."""
         _, ext = os.path.splitext(filename)
 
         # Load the audio file
@@ -218,15 +217,18 @@ class MusicCleanerWorker(QThread):
 
         # Detect nonsilent parts
         nonsilent_ranges = detect_nonsilent(
-            audio, min_silence_len=2000, silence_thresh=-40
+            audio, min_silence_len=2000, silence_thresh=-32
         )
         if not nonsilent_ranges:
             self.progress.emit(total_files, index)
             raise ValueError(f"No nonsilent audio detected in {filename}.")
 
-        # Extract the range from the first nonsilent frame to the last nonsilent frame
-        start, end = nonsilent_ranges[0][0], nonsilent_ranges[-1][1]
-        trimmed_audio = audio[start:end]
+        # Adjust start and end times to include 2-second buffers
+        start_time = max(0, nonsilent_ranges[0][0] - 2000)
+        end_time = min(len(audio), nonsilent_ranges[-1][1] + 2000)
+
+        # Extract the trimmed audio
+        trimmed_audio = audio[start_time:end_time]
 
         # Save to the output directory
         output_path = os.path.join(
@@ -363,7 +365,7 @@ class HomeUI(QWidget):
         self.clean_music_start_button.clicked.connect(self.clean_music)
         clean_music_layout.addWidget(self.clean_music_start_button)
 
-        self.clean_progress_label = QLabel("Waiting to process files...")
+        self.clean_progress_label = QLabel("Starting...")
         self.clean_progress_label.setVisible(False)  # Initially hidden
         self.clean_progress_label.setWordWrap(True)
 
