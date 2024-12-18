@@ -109,4 +109,4 @@ class LemonCableGUI(QWidget):
 
     def update_webdriver_status_label(self, message: str):
         """Update the status label with messages from WebDriverController."""
-        self.webdriver_status_label.setText(f"Status: {message}")
+        self.webdriver_status_label.setText(f"{message}")

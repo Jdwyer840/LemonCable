@@ -445,7 +445,7 @@ class NameGenerator:
         ]
 
         # Add weights for more randomness (some strategies appear more frequently)
-        weighted_strategies = strategy_pool * 2 + ["short_phrase", "random_combo", "adj_noun"] * 3
+        weighted_strategies = strategy_pool * 2 + ["short_phrase", "random_combo", "adj_noun", "verb_by_a_noun", "in_the_adj_noun", "noun_of_a_noun", "verb_the_noun", "adjective_and_adjective"] * 3
 
         # Select one or more strategies for layering
         primary_strategy = random.choice(weighted_strategies)

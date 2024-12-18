@@ -28,6 +28,7 @@ class WebDriverController:
         self.worker_thread.start()
 
     def start_driver(self):
+        # TODO This should be starting up a thread too so we don't just have the web driver running in the back gorund.
         """Start the WebDriver instance."""
         with self.driver_lock:
             if self.driver is None:

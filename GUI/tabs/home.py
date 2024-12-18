@@ -57,7 +57,6 @@ print('LEMON_CABLE_APP_LOGO_PATH')
 print(LEMON_CABLE_APP_LOGO_PATH)
 
 
-
 # TODO IDK what to call this yet, since the home tab is general, and whatever fuck you
 class FileRenameAndMoveWorker(QThread):
     progress = pyqtSignal(int, int)
@@ -157,8 +156,8 @@ class FileRenameAndMoveWorker(QThread):
         return folder_names
 
 
-# TODO make this a standard class so we dont rewrite for the same shit
 class MusicCleanerWorker(QThread):
+    # TODO fmaybe pass these in?
     progress = pyqtSignal(int, int)
     finished = pyqtSignal(int, int)
     error = pyqtSignal(str)
@@ -169,10 +168,12 @@ class MusicCleanerWorker(QThread):
         self.output_dir = output_dir
         self.supported_extensions = supported_extensions
         self.errored_files = []
+        self.is_running = False
         self.successes = 0
 
     def run(self):
         try:
+            self.is_running = True
             if not os.path.isdir(self.input_dir):
                 self.error.emit("Input directory does not exist.")
                 return
@@ -187,6 +188,8 @@ class MusicCleanerWorker(QThread):
                 return
 
             for index, filename in enumerate(files):
+                if not self.is_running:
+                    break
                 file_path = os.path.join(self.input_dir, filename)
                 _, ext = os.path.splitext(filename)
 
@@ -204,6 +207,7 @@ class MusicCleanerWorker(QThread):
                 print(f"Errored processing some file(s) \nErrored Files: {' '.join(self.errored_files)}")
                 self.error.emit(f"Errored processing some file(s) \nErrored Files: {' '.join(self.errored_files)}")
 
+            # We could haave the cancel function have a signal or set something on the worker itself to
             self.finished.emit(self.successes, len(self.errored_files))
         except Exception as e:
             print(f"Error processing files: {str(e)}")
@@ -214,7 +218,7 @@ class MusicCleanerWorker(QThread):
 
         # Load the audio file
         audio = AudioSegment.from_file(file_path, format=ext.lstrip('.'))
-
+        # TODO this is taking wayy too long , maybe try and optimize this shit more,
         # Detect nonsilent parts
         nonsilent_ranges = detect_nonsilent(
             audio, min_silence_len=2000, silence_thresh=-32
@@ -240,7 +244,8 @@ class MusicCleanerWorker(QThread):
         # Update progress
         self.progress.emit(total_files, index)
 
-
+    def stop(self):
+        self.is_running = False
 
 
 class HomeUI(QWidget):
@@ -427,7 +432,6 @@ class HomeUI(QWidget):
 
         rename_move_layout.addWidget(self.rename_progress_label)
 
-
         temp_shit = QHBoxLayout()
         checkbox_layout = QHBoxLayout()
         self.make_multiple_albums_checkbox = QCheckBox("For All Files In Input Directory?")
@@ -514,7 +518,7 @@ class HomeUI(QWidget):
 
     def show_error(self, message):
         """Handle errors during file processing."""
-        self.clean_progress_label.setText(f"Processing Status: Error - {message}")
+        self.clean_progress_label.setText(f"Error - {message}")
         QMessageBox.critical(self, "Error", message)
         self.clean_progress_label.setVisible(False)
 
@@ -529,13 +533,6 @@ class HomeUI(QWidget):
         # TODO move this shit to the controller class
 
     def select_input_directory(self):
-        dir_path = QFileDialog.getExistingDirectory(self, "Select Input Directory")
-        if dir_path:
-            self.input_dir = dir_path
-            self.input_dir_label.setText(f"Input Directory: {dir_path}")
-            print(f"Input Directory: {dir_path}")
-
-    def select_input_directory_SHARED(self):
         dir_path = QFileDialog.getExistingDirectory(self, "Select Input Directory")
         if dir_path:
             self.input_dir = dir_path
@@ -565,6 +562,10 @@ class HomeUI(QWidget):
         self.progress_bar.setValue(0)
         self.progress_bar.setVisible(True)
         self.clean_progress_label.setVisible(True)
+        self.clean_music_start_button.setText("Cancel")
+        self.clean_music_start_button.setObjectName("CancelButton")
+        self.clean_music_start_button.disconnect()
+        self.clean_music_start_button.clicked.connect(self.on_cancel)
 
         # Start the worker thread
         self.clean_music_worker.start()
@@ -577,11 +578,24 @@ class HomeUI(QWidget):
         self.progress_bar.setVisible(False)
         self.rename_progress_label.setText("Completed!")
         self.clean_progress_label.setVisible(False)
+        self.reset_cancel_btn_to_action_btn()
         QMessageBox.information(self, "Success", f"Music files processed successfully! \nSuccessful Files: {success_count}\nErrors: {error_count}")
+
+    def on_cancel(self):
+        self.clean_music_worker.stop()
+        self.clean_music_worker.quit()  # Safely terminate the thread
+        self.clean_music_worker.wait()
+        self.progress_bar.setVisible(False)
+        self.rename_progress_label.setText("Cancelled!")
+        self.clean_progress_label.setVisible(False)
+        QMessageBox.information(self, "Cancelled!", f"Cancelled")
+
+    def reset_cancel_btn_to_action_btn(self):
+        self.clean_music_start_button.setText("Trim Silence")
+        self.clean_music_start_button.setObjectName("")
+        self.clean_music_start_button.connect(self.clean_music)
 
     def on_cleaning_error(self, message):
         QMessageBox.warning(self, "Error", message)
-        self.clean_progress_label.setText(f"Processing Status: Error - {message}")
+        self.clean_progress_label.setText(f"Error - {message}")
         self.clean_progress_label.setVisible(False)
-
-

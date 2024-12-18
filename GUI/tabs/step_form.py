@@ -80,7 +80,6 @@ class StepForm(QWidget):
         # Dynamic form
         self.form_layout = QFormLayout()
         self.step_type = QComboBox()
-        print(" fuck " + str(FormHelpers.get_all_action_types_text()))
         self.step_type.addItems(FormHelpers.get_all_action_types_text())
         self.step_type.currentIndexChanged.connect(self.update_form_fields)
 
@@ -163,7 +162,6 @@ class StepForm(QWidget):
 
     def clear_inputs(self):
         """Clear the form inputs after adding a step."""
-        # TODO bug here ensure that the correct input is showing before we do all this, hasAttr is the wrong way of doing this we need like a current
 
         if self.current_form == FormHelpers.GO_TO.value:
             self.url_input.clear()
